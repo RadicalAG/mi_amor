@@ -61,16 +61,25 @@ Here are some function specification for the product:
 - User can delete the event that they have created
 - The app can produce QR code for the event
 - The app can be approched by scanning the QR code produced before
-- The App can accomodate data of the guests, such as their name, postal or email address, comments or wishes for the hosts
-- User that created the event can access the data from their events' guests anytime
+- The App can accomodate data of the guests, such as their name, and comments or wishes for the hosts
+- The guests filling their data can choose whether they want their wishes to be anonymous
+- The guests can see other guests' comments and name (optional, can be anonymous) in the wishes board
+- The event creator can access the data from their events' guests anytime
 - The app has a user friendly interface
 
 The features we would like to have on the future developments are:
 
+- The system can provide admin panel to control any event in the system
 - Provide a feature for the guests to upload photos of the event from their smartphones
 - The guests can access all of the photos taken on the event
 - The host can provide the information of their bank account (usually used in wedding parties as a wedding gift)
 - The host can share the kind of gifts that they would like to receive, and the guests can buy it for them
+- The event creator can determine the duration for the guests to be able to access the wishes board and photos
+- The event creator can delete the wishes from the wishes board
+- The system can save the last used username in the browser cache
+- The users can 'Like' and 'Dislike' the photos and wishes of the event
+- The users can comment on the photos and wishes
+- The system can create event wrap (like spotify), consists of the wishes and photos of the event
 
 ## Non-functional Requirements
 
