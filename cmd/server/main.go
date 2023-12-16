@@ -5,7 +5,7 @@ import (
 	"radical/red_letter/internal/handler"
 	"radical/red_letter/internal/server"
 
-	db "radical/red_letter/cmd/server/db"
+	"radical/red_letter/internal/db"
 
 	"github.com/gin-gonic/gin"
 )
