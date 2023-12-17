@@ -2,26 +2,39 @@ package server
 
 import (
 	"radical/red_letter/internal/handler"
+	"radical/red_letter/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 type HttpServer struct {
-	engine   *gin.Engine
-	handlers []handler.Handler
+	engine      *gin.Engine
+	handlers    []handler.Handler
+	middlewares []middleware.Middleware
 }
 
-func NewHttpServer(engine *gin.Engine) *HttpServer {
+func NewHttpServer() *HttpServer {
+	srv := gin.Default()
 	return &HttpServer{
-		engine: engine,
+		engine: srv,
 	}
 }
 
-func (h *HttpServer) AddHandler(handler handler.Handler) {
-	h.handlers = append(h.handlers, handler)
+func (h *HttpServer) AddHandler(handlers ...handler.Handler) {
+	for _, handler := range handlers {
+		h.handlers = append(h.handlers, handler)
+	}
+}
+func (h *HttpServer) AddMiddleware(middlewares ...middleware.Middleware) {
+	for _, middleware := range middlewares {
+		h.middlewares = append(h.middlewares, middleware)
+	}
 }
 
 func (h *HttpServer) Serve() {
+	for _, m := range h.middlewares {
+		m.RegisterMiddleware(h.engine)
+	}
 	for _, handler := range h.handlers {
 		handler.RegisterHandler(h.engine)
 	}

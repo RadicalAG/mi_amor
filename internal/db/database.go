@@ -4,8 +4,10 @@ import (
 	"log"
 	"os"
 
-	"github.com/go-pg/pg/v10"
+	pg "github.com/go-pg/pg"
 )
+
+var DBName string = "red_letter"
 
 func Connect() {
 	opts := &pg.Options{
