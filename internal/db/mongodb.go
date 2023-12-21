@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+var DBName string = "red_letter"
+
 type MongoDB struct {
 	Username string
 	Password string

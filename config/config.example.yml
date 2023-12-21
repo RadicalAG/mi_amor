@@ -1,9 +1,0 @@
-server:
-  host: "localhost"
-  port: 8000
-  
-database:
-  user: "admin"
-  pass: "super-pedro-1980"
-  uri: "mongodb://%v:%v&localhost:27017"
-
