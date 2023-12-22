@@ -10,6 +10,7 @@ import (
 	"radical/red_letter/internal/repository"
 	"radical/red_letter/internal/server"
 	"radical/red_letter/internal/service"
+	"radical/red_letter/internal/utils"
 
 	"radical/red_letter/internal/db"
 )
@@ -25,13 +26,18 @@ func main() {
 	errHandler := middleware.NewErrorMiddleware()
 	s.AddMiddleware(errHandler)
 
+	v := utils.NewValidator()
+
 	er := repository.NewEventRepository(client, db.DBName, model.EventCollectionName)
+	ur := repository.NewUserRepository(client, db.DBName, model.UserCollectionName)
 
 	es := service.NewEventService(er)
+	as := service.NewAuthService(ur, v)
 
 	th := handler.NewTestHandler()
 	eh := handler.NewEventHandler(es)
-	s.AddHandler(th, eh)
+	ah := handler.NewAuthHandler(as)
+	s.AddHandler(th, eh, ah)
 
 	s.Serve()
 	log.Println("hey there!")

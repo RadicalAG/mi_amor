@@ -37,6 +37,10 @@ func CannotBeEmptyError(name string) error {
 	return NewError(ErrBadRequest, fmt.Errorf("%v cannot be empty", name))
 }
 
+func InvalidError(name string) error {
+	return NewError(ErrBadRequest, fmt.Errorf("invalid %v value", name))
+}
+
 func InternalServerError(msg string) error {
 	if msg == "" {
 		msg = "internal server error"
