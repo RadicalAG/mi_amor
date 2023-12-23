@@ -24,15 +24,12 @@ func NewAuthService(repo repository.UserRepository, validator utils.Validator) *
 }
 
 type AuthService interface {
-	RegisterUser(ctx context.Context, name, username, email, password string) error
+	RegisterUser(ctx context.Context, name, email, password string) error
 }
 
-func (a *authService) RegisterUser(ctx context.Context, name, username, email, password string) error {
+func (a *authService) RegisterUser(ctx context.Context, name, email, password string) error {
 	if a.validator.IsBlank(name) {
 		return internal_error.CannotBeEmptyError("name")
-	}
-	if a.validator.IsBlank(username) {
-		return internal_error.CannotBeEmptyError("username")
 	}
 	if a.validator.IsBlank(email) {
 		return internal_error.CannotBeEmptyError("email")
@@ -45,6 +42,12 @@ func (a *authService) RegisterUser(ctx context.Context, name, username, email, p
 		return internal_error.InvalidError("email")
 	}
 
+	existingUser, _ := a.repo.GetUserByEmail(ctx, email)
+	if existingUser != nil {
+		log.Printf("email %v is already registered\n", email)
+		return internal_error.BadRequestError("email is already registered")
+	}
+
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		log.Printf("Error creating user: %v\n", err)
@@ -53,7 +56,6 @@ func (a *authService) RegisterUser(ctx context.Context, name, username, email, p
 
 	err = a.repo.CreateUser(ctx, &model.User{
 		Name:     name,
-		Username: username,
 		Email:    email,
 		Password: hashedPassword,
 	})

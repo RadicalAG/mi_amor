@@ -9,7 +9,6 @@ var UserCollectionName string = "user"
 type User struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
 	Name     string             `bson:"name,omitempty"`
-	Username string             `bson:"username,omitempty"`
 	Email    string             `bson:"email,omitempty"`
 	Password string             `bson:"password,omitempty"`
 }

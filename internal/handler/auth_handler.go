@@ -31,7 +31,7 @@ func (t *AuthHandler) RegisterUser(c *gin.Context) {
 		return
 	}
 
-	err := t.service.RegisterUser(c, req.Name, req.Username, req.Email, req.Password)
+	err := t.service.RegisterUser(c, req.Name, req.Email, req.Password)
 	if err != nil {
 		c.Error(api_error.FromError(err))
 		return
