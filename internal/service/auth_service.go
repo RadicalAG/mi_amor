@@ -28,32 +28,20 @@ type AuthService interface {
 }
 
 func (a *authService) RegisterUser(ctx context.Context, name, email, password string) error {
-	if a.validator.IsBlank(name) {
-		return internal_error.CannotBeEmptyError("name")
-	}
-	if a.validator.IsBlank(email) {
-		return internal_error.CannotBeEmptyError("email")
-	}
-	if a.validator.IsBlank(password) {
-		return internal_error.CannotBeEmptyError("password")
+	// validate requests
+	err := a.validateRequest(ctx, name, email, password)
+	if err != nil {
+		return err
 	}
 
-	if !a.validator.IsValidEmail(email) {
-		return internal_error.InvalidError("email")
-	}
-
-	existingUser, _ := a.repo.GetUserByEmail(ctx, email)
-	if existingUser != nil {
-		log.Printf("email %v is already registered\n", email)
-		return internal_error.BadRequestError("email is already registered")
-	}
-
+	// password hashing
 	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		log.Printf("Error creating user: %v\n", err)
 		return internal_error.InternalServerError("error creating user")
 	}
 
+	// create user
 	err = a.repo.CreateUser(ctx, &model.User{
 		Name:     name,
 		Email:    email,
@@ -64,6 +52,39 @@ func (a *authService) RegisterUser(ctx context.Context, name, email, password st
 	}
 	return nil
 
+}
+
+func (a *authService) validateRequest(ctx context.Context, name, email, password string) error {
+	// empty value validation
+	if a.validator.IsBlank(name) {
+		return internal_error.CannotBeEmptyError("name")
+	}
+	if a.validator.IsBlank(email) {
+		return internal_error.CannotBeEmptyError("email")
+	}
+	if a.validator.IsBlank(password) {
+		return internal_error.CannotBeEmptyError("password")
+	}
+
+	// email validation
+	if !a.validator.IsValidEmail(email) {
+		return internal_error.InvalidError("email")
+	}
+
+	existingUser, _ := a.repo.GetUserByEmail(ctx, email)
+	if existingUser != nil {
+		log.Printf("email %v is already registered\n", email)
+		return internal_error.BadRequestError("email is already registered")
+	}
+
+	// password validation
+	_, err := a.validator.IsValidPassword(password)
+	if err != nil {
+		log.Printf("Error creating user: %v\n", err)
+		return err
+	}
+
+	return nil
 }
 
 func hashPassword(password string) (string, error) {
