@@ -7,3 +7,10 @@ type RegisterUserRequest struct {
 }
 
 type RegisterUserResponse struct{}
+
+type LoginUserRequest struct {
+	Email    string `json:"email" binding:""`
+	Password string `json:"password" binding:""`
+}
+
+type LoginUserResponse struct{}

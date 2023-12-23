@@ -21,6 +21,7 @@ func NewAuthHandler(service service.AuthService) *AuthHandler {
 
 func (t *AuthHandler) RegisterHandler(r *gin.Engine) *gin.Engine {
 	r.POST("/auth/register", t.RegisterUser)
+	r.POST("/auth/login", t.LoginUser)
 	return r
 }
 
@@ -39,4 +40,21 @@ func (t *AuthHandler) RegisterUser(c *gin.Context) {
 	res := dto.RegisterUserResponse{}
 
 	c.JSON(http.StatusCreated, JsonSuccessFormater("User Registered Successfully", res))
+}
+
+func (t *AuthHandler) LoginUser(c *gin.Context) {
+	var req dto.LoginUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.Error(api_error.NewApiError(http.StatusBadRequest, "invalid body"))
+		return
+	}
+
+	err := t.service.LoginUser(c, req.Email, req.Password)
+	if err != nil {
+		c.Error(api_error.FromError(err))
+		return
+	}
+	res := dto.LoginUserResponse{}
+
+	c.JSON(http.StatusCreated, JsonSuccessFormater("Logged in Successfully", res))
 }

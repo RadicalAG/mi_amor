@@ -60,7 +60,7 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			log.Printf("user not found")
-			return nil, internal_error.NotFoundError("event")
+			return nil, internal_error.NotFoundError("user")
 		}
 		return nil, internal_error.InternalServerError("")
 	}

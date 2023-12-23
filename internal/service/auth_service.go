@@ -25,11 +25,12 @@ func NewAuthService(repo repository.UserRepository, validator utils.Validator) *
 
 type AuthService interface {
 	RegisterUser(ctx context.Context, name, email, password string) error
+	LoginUser(ctx context.Context, email, password string) error
 }
 
 func (a *authService) RegisterUser(ctx context.Context, name, email, password string) error {
 	// validate requests
-	err := a.validateRequest(ctx, name, email, password)
+	err := a.validateRequestRegister(ctx, name, email, password)
 	if err != nil {
 		return err
 	}
@@ -51,10 +52,38 @@ func (a *authService) RegisterUser(ctx context.Context, name, email, password st
 		return err
 	}
 	return nil
-
 }
 
-func (a *authService) validateRequest(ctx context.Context, name, email, password string) error {
+func (a *authService) LoginUser(ctx context.Context, email, password string) error {
+	// empty value validation
+	if a.validator.IsBlank(email) {
+		return internal_error.CannotBeEmptyError("email")
+	}
+	if a.validator.IsBlank(password) {
+		return internal_error.CannotBeEmptyError("password")
+	}
+
+	// email validation
+	if !a.validator.IsValidEmail(email) {
+		return internal_error.InvalidError("email")
+	}
+
+	existingUser, err := a.repo.GetUserByEmail(ctx, email)
+	if err != nil {
+		log.Printf("login error: %v\n", err)
+		return err
+	}
+
+	err = checkPassword(password, existingUser)
+	if err != nil {
+		log.Printf("login error: %v\n", err)
+		return internal_error.InvalidError("password")
+	}
+
+	return nil
+}
+
+func (a *authService) validateRequestRegister(ctx context.Context, name, email, password string) error {
 	// empty value validation
 	if a.validator.IsBlank(name) {
 		return internal_error.CannotBeEmptyError("name")
@@ -95,10 +124,6 @@ func hashPassword(password string) (string, error) {
 	return string(bytes), nil
 }
 
-// func (a *authService) CheckPassword(providedPassword string) error {
-// 	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(providedPassword))
-// 	if err != nil {
-// 		return err
-// 	}
-// 	return nil
-// }
+func checkPassword(providedPassword string, user *model.User) error {
+	return bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(providedPassword))
+}
