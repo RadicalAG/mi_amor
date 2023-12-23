@@ -29,30 +29,6 @@ func (v *validator) IsValidEmail(email string) bool {
 	return err == nil
 }
 
-// func (v *validator) IsValidPassword(password string) (bool, error) {
-
-// 	if len(password) < 8 {
-// 		return false, internal_error.BadRequestError("Password must be at least 8 characters long")
-// 	}
-
-// 	for _, char := range password {
-// 		switch {
-// 		case !unicode.	IsUpper(char):
-// 			return false, internal_error.BadRequestError("Password must contain at least one uppercase letter")
-// 		case !unicode.IsLower(char):
-// 			return false, internal_error.BadRequestError("Password must contain at least one lowercase letter")
-// 		case !unicode.IsNumber(char):
-// 			return false, internal_error.BadRequestError("Password must contain at least one numeric digit")
-// 		case !unicode.IsPunct(char) && !unicode.IsSymbol(char):
-// 			return false, internal_error.BadRequestError("Password must contain at least one symbol or punctuation mark")
-// 		default:
-// 			return false, internal_error.BadRequestError("Invalid character found in password")
-// 		}
-// 	}
-
-// 	return true, nil
-// }
-
 func (v *validator) IsValidPassword(password string) (bool, error) {
 	var (
 		upp, low, num, sym bool
