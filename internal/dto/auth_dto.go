@@ -13,4 +13,6 @@ type LoginUserRequest struct {
 	Password string `json:"password" binding:""`
 }
 
-type LoginUserResponse struct{}
+type LoginUserResponse struct {
+	Token string `json:"token" binding:""`
+}

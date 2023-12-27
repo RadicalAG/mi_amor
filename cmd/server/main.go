@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"radical/red_letter/config"
+	"radical/red_letter/internal/generator"
 	"radical/red_letter/internal/handler"
 	"radical/red_letter/internal/middleware"
 	"radical/red_letter/internal/model"
@@ -27,12 +28,13 @@ func main() {
 	s.AddMiddleware(errHandler)
 
 	v := utils.NewValidator()
+	tg := generator.NewTokenGenerator()
 
 	er := repository.NewEventRepository(client, db.DBName, model.EventCollectionName)
 	ur := repository.NewUserRepository(client, db.DBName, model.UserCollectionName)
 
 	es := service.NewEventService(er)
-	as := service.NewAuthService(ur, v)
+	as := service.NewAuthService(ur, v, tg)
 
 	th := handler.NewTestHandler()
 	eh := handler.NewEventHandler(es)

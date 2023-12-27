@@ -49,12 +49,12 @@ func (t *AuthHandler) LoginUser(c *gin.Context) {
 		return
 	}
 
-	err := t.service.LoginUser(c, req.Email, req.Password)
+	token, err := t.service.LoginUser(c, req.Email, req.Password)
 	if err != nil {
 		c.Error(api_error.FromError(err))
 		return
 	}
-	res := dto.LoginUserResponse{}
+	res := dto.LoginUserResponse{Token: token}
 
 	c.JSON(http.StatusCreated, JsonSuccessFormater("Logged in Successfully", res))
 }

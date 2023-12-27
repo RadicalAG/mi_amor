@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"log"
+	"radical/red_letter/internal/generator"
 	"radical/red_letter/internal/internal_error"
 	"radical/red_letter/internal/model"
 	"radical/red_letter/internal/repository"
@@ -12,20 +13,22 @@ import (
 )
 
 type authService struct {
-	repo      repository.UserRepository
-	validator utils.Validator
+	repo           repository.UserRepository
+	validator      utils.Validator
+	tokenGenerator generator.TokenGenerator
 }
 
-func NewAuthService(repo repository.UserRepository, validator utils.Validator) *authService {
+func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenGenerator generator.TokenGenerator) *authService {
 	return &authService{
-		repo:      repo,
-		validator: validator,
+		repo:           repo,
+		validator:      validator,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
 type AuthService interface {
 	RegisterUser(ctx context.Context, name, email, password string) error
-	LoginUser(ctx context.Context, email, password string) error
+	LoginUser(ctx context.Context, email, password string) (string, error)
 }
 
 func (a *authService) RegisterUser(ctx context.Context, name, email, password string) error {
@@ -54,33 +57,39 @@ func (a *authService) RegisterUser(ctx context.Context, name, email, password st
 	return nil
 }
 
-func (a *authService) LoginUser(ctx context.Context, email, password string) error {
+func (a *authService) LoginUser(ctx context.Context, email, password string) (string, error) {
 	// empty value validation
 	if a.validator.IsBlank(email) {
-		return internal_error.CannotBeEmptyError("email")
+		return "", internal_error.CannotBeEmptyError("email")
 	}
 	if a.validator.IsBlank(password) {
-		return internal_error.CannotBeEmptyError("password")
+		return "", internal_error.CannotBeEmptyError("password")
 	}
 
 	// email validation
 	if !a.validator.IsValidEmail(email) {
-		return internal_error.InvalidError("email")
+		return "", internal_error.InvalidError("email")
 	}
 
 	existingUser, err := a.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		log.Printf("login error: %v\n", err)
-		return err
+		log.Printf("Error logging in: %v\n", err)
+		return "", err
 	}
 
 	err = checkPassword(password, existingUser)
 	if err != nil {
-		log.Printf("login error: %v\n", err)
-		return internal_error.InvalidError("password")
+		log.Printf("Error logging in: %v\n", err)
+		return "", internal_error.InvalidError("password")
 	}
 
-	return nil
+	tokenString, err := a.tokenGenerator.GenerateJWT(email, existingUser.ID.Hex())
+	if err != nil {
+		log.Printf("Error logging in: %v\n", err)
+		return "", internal_error.InternalServerError("Error logging in")
+	}
+
+	return tokenString, nil
 }
 
 func (a *authService) validateRequestRegister(ctx context.Context, name, email, password string) error {
