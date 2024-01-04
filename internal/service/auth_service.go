@@ -13,16 +13,16 @@ import (
 )
 
 type authService struct {
-	repo           repository.UserRepository
-	validator      utils.Validator
-	tokenGenerator generator.TokenGenerator
+	repo       repository.UserRepository
+	validator  utils.Validator
+	tokenClaim generator.TokenClaim
 }
 
-func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenGenerator generator.TokenGenerator) *authService {
+func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenClaim generator.TokenClaim) *authService {
 	return &authService{
-		repo:           repo,
-		validator:      validator,
-		tokenGenerator: tokenGenerator,
+		repo:       repo,
+		validator:  validator,
+		tokenClaim: tokenClaim,
 	}
 }
 
@@ -83,7 +83,7 @@ func (a *authService) LoginUser(ctx context.Context, email, password string) (st
 		return "", internal_error.InvalidError("password")
 	}
 
-	tokenString, err := a.tokenGenerator.GenerateJWT(email, existingUser.ID.Hex())
+	tokenString, err := a.tokenClaim.GenerateJWT(email, existingUser.ID.Hex())
 	if err != nil {
 		log.Printf("Error logging in: %v\n", err)
 		return "", internal_error.InternalServerError("Error logging in")

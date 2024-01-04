@@ -9,24 +9,24 @@ import (
 
 var jwtKey = []byte("supersecretkey")
 
-type tokenGenerator struct {
+type tokenClaim struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func NewTokenGenerator() *tokenGenerator {
-	return &tokenGenerator{}
+func NewTokenClaim() *tokenClaim {
+	return &tokenClaim{}
 }
 
-type TokenGenerator interface {
+type TokenClaim interface {
 	GenerateJWT(email string, id string) (tokenString string, err error)
 	ValidateToken(signedToken string) (err error)
 }
 
-func (tg *tokenGenerator) GenerateJWT(email string, id string) (tokenString string, err error) {
+func (tg *tokenClaim) GenerateJWT(email string, id string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
-	claims := &tokenGenerator{
+	claims := &tokenClaim{
 		ID:    id,
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
@@ -38,10 +38,10 @@ func (tg *tokenGenerator) GenerateJWT(email string, id string) (tokenString stri
 	return
 }
 
-func (tg *tokenGenerator) ValidateToken(signedToken string) (err error) {
+func (tg *tokenClaim) ValidateToken(signedToken string) (err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
-		&tokenGenerator{},
+		&tokenClaim{},
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(jwtKey), nil
 		},
@@ -49,7 +49,7 @@ func (tg *tokenGenerator) ValidateToken(signedToken string) (err error) {
 	if err != nil {
 		return
 	}
-	claims, ok := token.Claims.(*tokenGenerator)
+	claims, ok := token.Claims.(*tokenClaim)
 	if !ok {
 		err = errors.New("couldn't parse claims")
 		return

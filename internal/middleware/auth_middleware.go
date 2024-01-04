@@ -6,10 +6,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type authMiddleware struct{}
+type authMiddleware struct {
+	tokenClaim generator.TokenClaim
+}
 
-func NewAuthMiddleware() *authMiddleware {
-	return &authMiddleware{}
+func NewAuthMiddleware(tokenClaim generator.TokenClaim) *authMiddleware {
+	return &authMiddleware{
+		tokenClaim: tokenClaim,
+	}
 }
 
 type AuthMiddleware interface {
@@ -24,7 +28,7 @@ func (a *authMiddleware) TokenAuthorization() gin.HandlerFunc {
 			context.Abort()
 			return
 		}
-		err := generator.NewTokenGenerator().ValidateToken(tokenString)
+		err := a.tokenClaim.ValidateToken(tokenString)
 		if err != nil {
 			context.JSON(401, gin.H{"error": err.Error()})
 			context.Abort()

@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"radical/red_letter/internal/api_error"
 	"radical/red_letter/internal/dto"
+	"radical/red_letter/internal/generator"
 	"radical/red_letter/internal/middleware"
 	"radical/red_letter/internal/service"
 
@@ -11,21 +12,23 @@ import (
 )
 
 type AuthHandler struct {
-	service    service.AuthService
-	middleware middleware.AuthMiddleware
+	service        service.AuthService
+	authmiddleware middleware.AuthMiddleware
+	tokenClaim     generator.TokenClaim
 }
 
-func NewAuthHandler(service service.AuthService, middleware middleware.AuthMiddleware) *AuthHandler {
+func NewAuthHandler(service service.AuthService, authmiddleware middleware.AuthMiddleware, tokenClaim generator.TokenClaim) *AuthHandler {
 	return &AuthHandler{
-		service:    service,
-		middleware: middleware,
+		service:        service,
+		authmiddleware: authmiddleware,
+		tokenClaim:     tokenClaim,
 	}
 }
 
 func (t *AuthHandler) RegisterHandler(r *gin.Engine) *gin.Engine {
 	r.POST("/auth/register", t.RegisterUser)
 	r.POST("/auth/login", t.LoginUser)
-	secured := r.Group("/auth/me").Use(middleware.NewAuthMiddleware().TokenAuthorization())
+	secured := r.Group("/auth/me").Use(middleware.NewAuthMiddleware(t.tokenClaim).TokenAuthorization())
 	{
 		secured.GET("/ping", t.Ping)
 	}

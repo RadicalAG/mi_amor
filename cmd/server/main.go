@@ -24,22 +24,23 @@ func main() {
 	defer cleanup()
 	s := server.NewHttpServer()
 
-	am := middleware.NewAuthMiddleware()
+	tc := generator.NewTokenClaim()
+
+	am := middleware.NewAuthMiddleware(tc)
 	errHandler := middleware.NewErrorMiddleware()
 	s.AddMiddleware(errHandler)
 
 	v := utils.NewValidator()
-	tg := generator.NewTokenGenerator()
 
 	er := repository.NewEventRepository(client, db.DBName, model.EventCollectionName)
 	ur := repository.NewUserRepository(client, db.DBName, model.UserCollectionName)
 
 	es := service.NewEventService(er)
-	as := service.NewAuthService(ur, v, tg)
+	as := service.NewAuthService(ur, v, tc)
 
 	th := handler.NewTestHandler()
 	eh := handler.NewEventHandler(es)
-	ah := handler.NewAuthHandler(as, am)
+	ah := handler.NewAuthHandler(as, am, tc)
 	s.AddHandler(th, eh, ah)
 
 	s.Serve()
