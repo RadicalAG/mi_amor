@@ -58,17 +58,10 @@ func (a *authService) RegisterUser(ctx context.Context, name, email, password st
 }
 
 func (a *authService) LoginUser(ctx context.Context, email, password string) (string, error) {
-	// empty value validation
-	if a.validator.IsBlank(email) {
-		return "", internal_error.CannotBeEmptyError("email")
-	}
-	if a.validator.IsBlank(password) {
-		return "", internal_error.CannotBeEmptyError("password")
-	}
-
-	// email validation
-	if !a.validator.IsValidEmail(email) {
-		return "", internal_error.InvalidError("email")
+	// validate requests
+	err := a.validateRequestLogin(email, password)
+	if err != nil {
+		return "", err
 	}
 
 	existingUser, err := a.repo.GetUserByEmail(ctx, email)
@@ -90,6 +83,23 @@ func (a *authService) LoginUser(ctx context.Context, email, password string) (st
 	}
 
 	return tokenString, nil
+}
+
+func (a *authService) validateRequestLogin(email, password string) error {
+	// empty value validation
+	if a.validator.IsBlank(email) {
+		return internal_error.CannotBeEmptyError("email")
+	}
+	if a.validator.IsBlank(password) {
+		return internal_error.CannotBeEmptyError("password")
+	}
+
+	// email validation
+	if !a.validator.IsValidEmail(email) {
+		return internal_error.InvalidError("email")
+	}
+
+	return nil
 }
 
 func (a *authService) validateRequestRegister(ctx context.Context, name, email, password string) error {
