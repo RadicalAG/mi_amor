@@ -24,6 +24,7 @@ func main() {
 	defer cleanup()
 	s := server.NewHttpServer()
 
+	am := middleware.NewAuthMiddleware()
 	errHandler := middleware.NewErrorMiddleware()
 	s.AddMiddleware(errHandler)
 
@@ -38,7 +39,7 @@ func main() {
 
 	th := handler.NewTestHandler()
 	eh := handler.NewEventHandler(es)
-	ah := handler.NewAuthHandler(as)
+	ah := handler.NewAuthHandler(as, am)
 	s.AddHandler(th, eh, ah)
 
 	s.Serve()
