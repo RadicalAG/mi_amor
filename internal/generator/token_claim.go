@@ -21,10 +21,10 @@ func NewTokenClaim() *tokenClaim {
 
 type TokenClaim interface {
 	GenerateJWT(email string, id string) (tokenString string, err error)
-	ValidateToken(signedToken string) (err error)
+	ValidateAndDecodeToken(signedToken string) (claims *tokenClaim, err error)
 }
 
-func (tg *tokenClaim) GenerateJWT(email string, id string) (tokenString string, err error) {
+func (tc *tokenClaim) GenerateJWT(email string, id string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &tokenClaim{
 		ID:    id,
@@ -38,7 +38,7 @@ func (tg *tokenClaim) GenerateJWT(email string, id string) (tokenString string, 
 	return
 }
 
-func (tg *tokenClaim) ValidateToken(signedToken string) (err error) {
+func (tc *tokenClaim) ValidateAndDecodeToken(signedToken string) (claims *tokenClaim, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&tokenClaim{},
@@ -47,16 +47,17 @@ func (tg *tokenClaim) ValidateToken(signedToken string) (err error) {
 		},
 	)
 	if err != nil {
-		return
+		return nil, err
 	}
+
 	claims, ok := token.Claims.(*tokenClaim)
 	if !ok {
-		err = errors.New("couldn't parse claims")
-		return
+		return nil, errors.New("couldn't parse claims")
 	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("token expired")
-		return
+
+	if claims.ExpiresAt < time.Now().Unix() {
+		return nil, errors.New("token expired")
 	}
-	return
+
+	return claims, nil
 }

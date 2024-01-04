@@ -1,7 +1,9 @@
 package middleware
 
 import (
+	"radical/red_letter/internal/api_error"
 	"radical/red_letter/internal/generator"
+	"radical/red_letter/internal/internal_error"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,19 +23,20 @@ type AuthMiddleware interface {
 }
 
 func (a *authMiddleware) TokenAuthorization() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		tokenString := context.GetHeader("Authorization")
+	return func(c *gin.Context) {
+		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			context.JSON(401, gin.H{"error": "request does not contain an access token"})
-			context.Abort()
+			c.Error(api_error.FromError(internal_error.BadRequestError("unauthorized")))
 			return
 		}
-		err := a.tokenClaim.ValidateToken(tokenString)
+
+		data, err := a.tokenClaim.ValidateAndDecodeToken(tokenString)
 		if err != nil {
-			context.JSON(401, gin.H{"error": err.Error()})
-			context.Abort()
+			c.Error(api_error.FromError(internal_error.BadRequestError("unauthorized")))
 			return
 		}
-		context.Next()
+
+		c.Set("tokenClaims", data)
+		c.Next()
 	}
 }
