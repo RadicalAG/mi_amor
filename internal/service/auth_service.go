@@ -58,7 +58,6 @@ func (a *authService) RegisterUser(ctx context.Context, name, email, password st
 }
 
 func (a *authService) LoginUser(ctx context.Context, email, password string) (string, error) {
-	// validate requests
 	err := a.validateRequestLogin(email, password)
 	if err != nil {
 		return "", err
@@ -73,7 +72,7 @@ func (a *authService) LoginUser(ctx context.Context, email, password string) (st
 	err = checkPassword(password, existingUser)
 	if err != nil {
 		log.Printf("Error logging in: %v\n", err)
-		return "", internal_error.InvalidError("password")
+		return "", internal_error.BadRequestError("email and password ot matched")
 	}
 
 	tokenString, err := a.tokenClaim.GenerateJWT(email, existingUser.ID.Hex())
@@ -121,8 +120,8 @@ func (a *authService) validateRequestRegister(ctx context.Context, name, email, 
 
 	existingUser, _ := a.repo.GetUserByEmail(ctx, email)
 	if existingUser != nil {
-		log.Printf("email %v is already registered\n", email)
-		return internal_error.BadRequestError("email is already registered")
+		log.Printf("email %v is unavailable\n", email)
+		return internal_error.BadRequestError("email is unavailable")
 	}
 
 	// password validation
