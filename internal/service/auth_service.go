@@ -16,6 +16,7 @@ type authService struct {
 	repo       repository.UserRepository
 	validator  utils.Validator
 	tokenClaim generator.TokenClaim
+	secretKey  string
 }
 
 func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenClaim generator.TokenClaim) *authService {

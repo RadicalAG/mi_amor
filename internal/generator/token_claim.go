@@ -7,16 +7,17 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-var jwtKey = []byte("supersecretkey")
-
 type tokenClaim struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
+	ID     string `json:"id"`
+	Email  string `json:"email"`
+	jwtKey []byte
 	jwt.StandardClaims
 }
 
-func NewTokenClaim() *tokenClaim {
-	return &tokenClaim{}
+func NewTokenClaim(secretKey string) *tokenClaim {
+	return &tokenClaim{
+		jwtKey: []byte(secretKey),
+	}
 }
 
 type TokenClaim interface {
@@ -34,7 +35,7 @@ func (tc *tokenClaim) GenerateJWT(email string, id string) (tokenString string, 
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err = token.SignedString(jwtKey)
+	tokenString, err = token.SignedString(tc.jwtKey)
 	return
 }
 
@@ -43,7 +44,7 @@ func (tc *tokenClaim) ValidateAndDecodeToken(signedToken string) (claims *tokenC
 		signedToken,
 		&tokenClaim{},
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtKey), nil
+			return []byte(tc.jwtKey), nil
 		},
 	)
 	if err != nil {

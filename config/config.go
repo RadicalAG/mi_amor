@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server ServerConfig   `mapstructure:"server"`
 	DB     DatabaseConfig `mapstructure:"database"`
+	JWT    JwtConfig      `mapstructure:"jwt"`
 }
 
 type ServerConfig struct {
@@ -20,6 +21,10 @@ type DatabaseConfig struct {
 	Username string `mapstructure:"user"`
 	Password string `mapstructure:"pass"`
 	Uri      string `mapstructure:"uri"`
+}
+
+type JwtConfig struct {
+	SecretKey string `mapstructure:"secretkey"`
 }
 
 func Init() *Config {

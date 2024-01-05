@@ -24,7 +24,7 @@ func main() {
 	defer cleanup()
 	s := server.NewHttpServer()
 
-	tc := generator.NewTokenClaim()
+	tc := generator.NewTokenClaim(configuration.JWT.SecretKey)
 
 	am := middleware.NewAuthMiddleware(tc)
 	errHandler := middleware.NewErrorMiddleware()
