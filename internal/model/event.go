@@ -8,4 +8,5 @@ type Event struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty"`
 	Description string             `bson:"description,omitempty"`
+	UserID      primitive.ObjectID `bson:"user_id,omitempty"`
 }

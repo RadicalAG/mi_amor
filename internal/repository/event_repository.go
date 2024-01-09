@@ -27,15 +27,22 @@ func NewEventRepository(client *mongo.Client, databaseName, collectionName strin
 }
 
 type EventRepository interface {
-	CreateEvent(ctx context.Context, event *model.Event) (string, error)
+	CreateEvent(ctx context.Context, event *model.Event, userID string) (string, error)
 	GetEventByID(ctx context.Context, eventID string) (*model.Event, error)
 }
 
 func (r *eventRepository) getCollection() *mongo.Collection {
 	return r.client.Database(r.databaseName).Collection(r.collectionName)
 }
-func (r *eventRepository) CreateEvent(ctx context.Context, event *model.Event) (string, error) {
+func (r *eventRepository) CreateEvent(ctx context.Context, event *model.Event, userID string) (string, error) {
 	collection := r.getCollection()
+
+	objectID, err := primitive.ObjectIDFromHex(userID)
+	if err != nil {
+		log.Printf("invalid ObjectID format")
+		return "", internal_error.NotFoundError("event")
+	}
+	event.UserID = objectID
 
 	// Set a new ObjectID if not provided
 	if event.ID.IsZero() {

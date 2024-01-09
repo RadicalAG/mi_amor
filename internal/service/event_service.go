@@ -9,28 +9,34 @@ import (
 )
 
 type eventService struct {
-	repo repository.EventRepository
+	repo     repository.EventRepository
+	userRepo repository.UserRepository
 }
 
-func NewEventService(repo repository.EventRepository) *eventService {
+func NewEventService(repo repository.EventRepository, userRepo repository.UserRepository) *eventService {
 	return &eventService{
-		repo: repo,
+		repo:     repo,
+		userRepo: userRepo,
 	}
 }
 
 type EventService interface {
-	CreateEvent(ctx context.Context, name, description string) (createdID string, err error)
+	CreateEvent(ctx context.Context, name, description, userID string) (createdID string, err error)
 	GetEventByID(ctx context.Context, eventID string) (event *model.Event, err error)
 }
 
-func (e *eventService) CreateEvent(ctx context.Context, name, description string) (createdID string, err error) {
+func (e *eventService) CreateEvent(ctx context.Context, name, description, userID string) (createdID string, err error) {
 	if name == "" {
 		return "", internal_error.CannotBeEmptyError("name")
+	}
+	exist := e.userRepo.CheckIfUserExistByID(ctx, userID)
+	if !exist {
+		return "", internal_error.Unauthorized("")
 	}
 	createdID, err = e.repo.CreateEvent(ctx, &model.Event{
 		Name:        name,
 		Description: description,
-	})
+	}, userID)
 	if err != nil {
 		return "", err
 

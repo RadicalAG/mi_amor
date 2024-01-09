@@ -13,17 +13,17 @@ import (
 )
 
 type authService struct {
-	repo       repository.UserRepository
-	validator  utils.Validator
-	tokenClaim generator.TokenClaim
-	secretKey  string
+	repo           repository.UserRepository
+	validator      utils.Validator
+	tokenGenerator generator.TokenGenerator
+	secretKey      string
 }
 
-func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenClaim generator.TokenClaim) *authService {
+func NewAuthService(repo repository.UserRepository, validator utils.Validator, tokenGenerator generator.TokenGenerator) *authService {
 	return &authService{
-		repo:       repo,
-		validator:  validator,
-		tokenClaim: tokenClaim,
+		repo:           repo,
+		validator:      validator,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
@@ -76,7 +76,7 @@ func (a *authService) LoginUser(ctx context.Context, email, password string) (st
 		return "", internal_error.BadRequestError("email and password ot matched")
 	}
 
-	tokenString, err := a.tokenClaim.GenerateJWT(email, existingUser.ID.Hex())
+	tokenString, err := a.tokenGenerator.GenerateJWT(email, existingUser.ID.Hex())
 	if err != nil {
 		log.Printf("Error logging in: %v\n", err)
 		return "", internal_error.InternalServerError("Error logging in")

@@ -7,27 +7,30 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
-type tokenClaim struct {
-	ID     string `json:"id"`
-	Email  string `json:"email"`
+type tokenGenerator struct {
 	jwtKey []byte
+}
+
+type TokenClaim struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-func NewTokenClaim(secretKey string) *tokenClaim {
-	return &tokenClaim{
+func NewTokenGenerator(secretKey string) *tokenGenerator {
+	return &tokenGenerator{
 		jwtKey: []byte(secretKey),
 	}
 }
 
-type TokenClaim interface {
+type TokenGenerator interface {
 	GenerateJWT(email string, id string) (tokenString string, err error)
-	ValidateAndDecodeToken(signedToken string) (claims *tokenClaim, err error)
+	ValidateAndDecodeToken(signedToken string) (claims *TokenClaim, err error)
 }
 
-func (tc *tokenClaim) GenerateJWT(email string, id string) (tokenString string, err error) {
+func (tc *tokenGenerator) GenerateJWT(email string, id string) (tokenString string, err error) {
 	expirationTime := time.Now().Add(1 * time.Hour)
-	claims := &tokenClaim{
+	claims := &TokenClaim{
 		ID:    id,
 		Email: email,
 		StandardClaims: jwt.StandardClaims{
@@ -39,10 +42,10 @@ func (tc *tokenClaim) GenerateJWT(email string, id string) (tokenString string, 
 	return
 }
 
-func (tc *tokenClaim) ValidateAndDecodeToken(signedToken string) (claims *tokenClaim, err error) {
+func (tc *tokenGenerator) ValidateAndDecodeToken(signedToken string) (claims *TokenClaim, err error) {
 	token, err := jwt.ParseWithClaims(
 		signedToken,
-		&tokenClaim{},
+		&TokenClaim{},
 		func(token *jwt.Token) (interface{}, error) {
 			return []byte(tc.jwtKey), nil
 		},
@@ -51,7 +54,7 @@ func (tc *tokenClaim) ValidateAndDecodeToken(signedToken string) (claims *tokenC
 		return nil, err
 	}
 
-	claims, ok := token.Claims.(*tokenClaim)
+	claims, ok := token.Claims.(*TokenClaim)
 	if !ok {
 		return nil, errors.New("couldn't parse claims")
 	}
