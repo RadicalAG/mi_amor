@@ -28,6 +28,8 @@ func NewUserRepository(client *mongo.Client, databaseName, collectionName string
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *model.User) error
 	GetUserByEmail(ctx context.Context, email string) (*model.User, error)
+	CheckIfUserExistByID(ctx context.Context, id string) bool
+	GetUserByID(ctx context.Context, id string) (*model.User, error)
 }
 
 func (r *userRepository) getCollection() *mongo.Collection {
@@ -66,4 +68,34 @@ func (r *userRepository) GetUserByEmail(ctx context.Context, email string) (*mod
 	}
 
 	return &user, nil
+}
+func (r *userRepository) GetUserByID(ctx context.Context, id string) (*model.User, error) {
+	collection := r.getCollection()
+
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		log.Printf("invalid ObjectID format")
+		return nil, internal_error.NotFoundError("user")
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	var user model.User
+	err = collection.FindOne(ctx, filter).Decode(&user)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			log.Printf("user not found")
+			return nil, internal_error.NotFoundError("user")
+		}
+		return nil, internal_error.InternalServerError("")
+	}
+
+	return &user, nil
+}
+func (r *userRepository) CheckIfUserExistByID(ctx context.Context, id string) bool {
+	_, err := r.GetUserByID(ctx, id)
+	if err != nil {
+		return false
+	}
+	return true
 }
