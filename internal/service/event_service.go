@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"radical/red_letter/internal/internal_error"
@@ -64,7 +63,6 @@ func (e *eventService) validateRequestCreateEvent(name string, startDate, endDat
 	}
 
 	currentTime := time.Now()
-	log.Print("the current time is %v", currentTime)
 	if startDate.Before(currentTime) {
 		return internal_error.InvalidError("start date")
 	}
