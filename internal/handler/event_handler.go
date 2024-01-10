@@ -33,7 +33,7 @@ func (t *EventHandler) CreateEvent(c *gin.Context) {
 		return
 	}
 
-	createdID, err := t.service.CreateEvent(c, req.Name, req.Description)
+	createdID, err := t.service.CreateEvent(c, req.Name, req.Description, req.StartDate, req.EndDate)
 	if err != nil {
 		c.Error(api_error.FromError(err))
 		return

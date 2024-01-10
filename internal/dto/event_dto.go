@@ -1,8 +1,14 @@
 package dto
 
+import (
+	"time"
+)
+
 type CreateEventRequest struct {
-	Name        string `json:"name" binding:""`
-	Description string `json:"description" binding:""`
+	Name        string    `json:"name" binding:""`
+	Description string    `json:"description" binding:""`
+	StartDate   time.Time `json:"startDate" binding:"required"`
+	EndDate     time.Time `json:"endDate" binding:"required"`
 }
 
 type CreateEventResponse struct {
