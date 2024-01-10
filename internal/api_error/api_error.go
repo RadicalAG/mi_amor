@@ -29,6 +29,8 @@ func FromError(err error) APIError {
 			apiError.Status = httpNet.StatusBadRequest
 		case internal_error.ErrNotFound:
 			apiError.Status = httpNet.StatusNotFound
+		case internal_error.ErrUnauthorized:
+			apiError.Status = httpNet.StatusUnauthorized
 		case internal_error.ErrInternalServer:
 			apiError.Status = httpNet.StatusInternalServerError
 		}

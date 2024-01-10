@@ -9,6 +9,7 @@ var (
 	ErrBadRequest     = errors.New("bad request")
 	ErrInternalServer = errors.New("internal server error")
 	ErrNotFound       = errors.New("not found")
+	ErrUnauthorized   = errors.New("unauthorized")
 )
 
 type InternalError struct {
@@ -43,6 +44,10 @@ func InvalidError(name string) error {
 
 func BadRequestError(msg string) error {
 	return NewError(ErrBadRequest, fmt.Errorf(msg))
+}
+
+func Unauthorized(msg string) error {
+	return NewError(ErrUnauthorized, fmt.Errorf(msg))
 }
 
 func InternalServerError(msg string) error {
