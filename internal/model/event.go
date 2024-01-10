@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -12,6 +10,7 @@ type Event struct {
 	ID          primitive.ObjectID `bson:"_id,omitempty"`
 	Name        string             `bson:"name,omitempty"`
 	Description string             `bson:"description,omitempty"`
-	StartDate   time.Time          `bson:"startDate,omitempty"`
-	EndDate     time.Time          `bson:"endDate,omitempty"`
+	UserID      primitive.ObjectID `bson:"user_id,omitempty"`
+	StartDate   int64              `bson:"startDate,omitempty"`
+	EndDate     int64              `bson:"endDate,omitempty"`
 }

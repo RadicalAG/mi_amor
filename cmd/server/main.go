@@ -24,7 +24,7 @@ func main() {
 	defer cleanup()
 	s := server.NewHttpServer()
 
-	tc := generator.NewTokenClaim(configuration.JWT.SecretKey)
+	tc := generator.NewTokenGenerator(configuration.JWT.SecretKey)
 
 	am := middleware.NewAuthMiddleware(tc)
 	errHandler := middleware.NewErrorMiddleware()
@@ -35,12 +35,12 @@ func main() {
 	er := repository.NewEventRepository(client, db.DBName, model.EventCollectionName)
 	ur := repository.NewUserRepository(client, db.DBName, model.UserCollectionName)
 
-	es := service.NewEventService(er)
+	es := service.NewEventService(er, ur)
 	as := service.NewAuthService(ur, v, tc)
 
 	th := handler.NewTestHandler()
-	eh := handler.NewEventHandler(es)
-	ah := handler.NewAuthHandler(as, am, tc)
+	eh := handler.NewEventHandler(es, am)
+	ah := handler.NewAuthHandler(as, am)
 	s.AddHandler(th, eh, ah)
 
 	s.Serve()

@@ -10,24 +10,31 @@ import (
 )
 
 type eventService struct {
-	repo repository.EventRepository
+	repo     repository.EventRepository
+	userRepo repository.UserRepository
 }
 
-func NewEventService(repo repository.EventRepository) *eventService {
+func NewEventService(repo repository.EventRepository, userRepo repository.UserRepository) *eventService {
 	return &eventService{
-		repo: repo,
+		repo:     repo,
+		userRepo: userRepo,
 	}
 }
 
 type EventService interface {
-	CreateEvent(ctx context.Context, name, description string, startDate, endDate time.Time) (createdID string, err error)
+	CreateEvent(ctx context.Context, name, description, userID string, startDate, endDate int64) (createdID string, err error)
 	GetEventByID(ctx context.Context, eventID string) (event *model.Event, err error)
 }
 
-func (e *eventService) CreateEvent(ctx context.Context, name, description string, startDate, endDate time.Time) (createdID string, err error) {
+func (e *eventService) CreateEvent(ctx context.Context, name, description, userID string, startDate, endDate int64) (createdID string, err error) {
 	err = e.validateRequestCreateEvent(name, startDate, endDate)
 	if err != nil {
 		return "", err
+	}
+
+	exist := e.userRepo.CheckIfUserExistByID(ctx, userID)
+	if !exist {
+		return "", internal_error.Unauthorized("")
 	}
 
 	createdID, err = e.repo.CreateEvent(ctx, &model.Event{
@@ -35,7 +42,8 @@ func (e *eventService) CreateEvent(ctx context.Context, name, description string
 		Description: description,
 		StartDate:   startDate,
 		EndDate:     endDate,
-	})
+	}, userID)
+
 	if err != nil {
 		return "", err
 	}
@@ -57,16 +65,18 @@ func (e *eventService) GetEventByID(ctx context.Context, eventID string) (event 
 
 }
 
-func (e *eventService) validateRequestCreateEvent(name string, startDate, endDate time.Time) error {
+func (e *eventService) validateRequestCreateEvent(name string, startDate, endDate int64) error {
 	if name == "" {
 		return internal_error.CannotBeEmptyError("name")
 	}
 
-	currentTime := time.Now()
-	if startDate.Before(currentTime) {
+	current := time.Now()
+	start := time.Unix(startDate, 0)
+	end := time.Unix(endDate, 0)
+	if start.Before(current) {
 		return internal_error.InvalidError("start date")
 	}
-	if endDate.Before(currentTime) || endDate.Before(startDate) {
+	if end.Before(current) || end.Before(start) {
 		return internal_error.InvalidError("end date")
 	}
 

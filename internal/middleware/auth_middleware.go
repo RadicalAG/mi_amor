@@ -9,12 +9,12 @@ import (
 )
 
 type authMiddleware struct {
-	tokenClaim generator.TokenClaim
+	tokenGenerator generator.TokenGenerator
 }
 
-func NewAuthMiddleware(tokenClaim generator.TokenClaim) *authMiddleware {
+func NewAuthMiddleware(tokenGenerator generator.TokenGenerator) *authMiddleware {
 	return &authMiddleware{
-		tokenClaim: tokenClaim,
+		tokenGenerator: tokenGenerator,
 	}
 }
 
@@ -26,13 +26,15 @@ func (a *authMiddleware) TokenAuthorization() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			c.Error(api_error.FromError(internal_error.BadRequestError("unauthorized")))
+			c.Error(api_error.FromError(internal_error.Unauthorized("unauthorized")))
+			c.Abort()
 			return
 		}
 
-		data, err := a.tokenClaim.ValidateAndDecodeToken(tokenString)
+		data, err := a.tokenGenerator.ValidateAndDecodeToken(tokenString)
 		if err != nil {
-			c.Error(api_error.FromError(internal_error.BadRequestError("unauthorized")))
+			c.Error(api_error.FromError(internal_error.Unauthorized("unauthorized")))
+			c.Abort()
 			return
 		}
 

@@ -31,8 +31,6 @@ func (m *MongoDB) Connect(ctx context.Context) (client *mongo.Client, cleanup fu
 		panic(err)
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-	res, err := client.ListDatabaseNames(ctx, bson.D{})
-	fmt.Println(res)
 
 	return client, func() {
 		if err = client.Disconnect(ctx); err != nil {
